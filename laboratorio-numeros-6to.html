@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+<meta name="theme-color" content="#0B1020">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Laboratorio de Superpoderes Numéricos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --bg-deep:#0B1020;
+    --bg-deep2:#070A14;
+    --panel:#F3F6FF;
+    --panel-line:#D7DEF5;
+    --ink:#171B33;
+    --cyan:#29E7CD;
+    --violet:#8C54FF;
+    --amber:#FFB400;
+    --success:#1FAE6D;
+    --success-bg:#DFF6EA;
+    --danger:#E64545;
+    --danger-bg:#FBE0DF;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  body{
+    margin:0;
+    font-family:'Space Mono', monospace;
+    color:#EAF0FF;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(140,84,255,0.18), transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(41,231,205,0.14), transparent 40%),
+      var(--bg-deep);
+    min-height:100vh;
+    overflow-x:hidden;
+    width:100%;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:14px 14px 60px;width:100%;}
+
+  /* HEADER */
+  header.app{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:16px 18px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:10px;
+    margin-bottom:16px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.app::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:3px;
+    background:linear-gradient(90deg, var(--cyan), var(--violet), var(--amber));
+  }
+  .core-icon{
+    width:50px;height:50px;border-radius:12px;
+    background:linear-gradient(135deg, var(--violet), var(--cyan));
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Orbitron',sans-serif;font-size:22px;font-weight:800;color:#0B1020;
+    flex-shrink:0;
+    box-shadow:0 0 18px rgba(140,84,255,0.5);
+  }
+  header.app h1{
+    font-family:'Orbitron',sans-serif;font-weight:800;
+    margin:0;font-size:clamp(1rem,4.3vw,1.4rem);letter-spacing:0.3px;color:#fff;
+    line-height:1.25;
+  }
+  header.app p{margin:2px 0 0;font-size:0.76rem;color:#9FB0D8;letter-spacing:0.3px;}
+  .energy-stat{margin-left:auto;text-align:right;font-size:0.72rem;color:#9FB0D8;letter-spacing:0.5px;}
+  .energy-stat b{font-family:'Orbitron',sans-serif;color:var(--amber);font-size:1.15rem;display:block;}
+
+  /* MODULE NAV */
+  nav.modules{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(120px,1fr));
+    gap:8px;margin-bottom:18px;
+  }
+  .mod-tab{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.14);
+    color:#EAF0FF;
+    border-radius:10px;
+    padding:12px 8px;
+    font-family:'Space Mono',monospace;
+    font-weight:700;
+    font-size:0.74rem;
+    line-height:1.3;
+    cursor:pointer;
+    text-align:center;
+    min-height:50px;
+    word-break:break-word;
+    transition:transform .15s ease, border-color .15s ease;
+  }
+  .mod-tab .icon{display:block;font-family:'Orbitron',sans-serif;font-size:1.2rem;margin-bottom:2px;}
+  .mod-tab.active{border-color:var(--cyan);background:rgba(41,231,205,0.12);transform:translateY(-3px);}
+  .mod-tab.locked{opacity:0.4;cursor:not-allowed;}
+  .mod-tab .bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.12);margin-top:6px;overflow:hidden;}
+  .mod-tab .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));}
+  .mod-tab:not(.locked):hover{transform:translateY(-2px);}
+
+  /* PANEL */
+  .panel{
+    background:var(--panel);
+    color:var(--ink);
+    border-radius:12px;
+    padding:22px 20px 26px;
+    box-shadow:0 14px 36px rgba(0,0,0,0.45);
+    position:relative;
+    background-image:
+      linear-gradient(rgba(140,84,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(140,84,255,0.05) 1px, transparent 1px);
+    background-size:22px 22px;
+  }
+  .tag{
+    position:absolute;top:16px;right:16px;
+    border:2px solid var(--violet);color:var(--violet);
+    font-family:'Orbitron',sans-serif;font-weight:800;
+    padding:3px 10px;border-radius:6px;
+    font-size:0.62rem;letter-spacing:0.5px;
+    background:rgba(255,255,255,0.7);
+  }
+  .panel-title{
+    font-family:'Orbitron',sans-serif;font-weight:800;
+    font-size:1.15rem;border-bottom:2px solid var(--panel-line);padding-bottom:10px;margin:0 0 14px;
+    padding-right:90px;
+  }
+  .brief-box{
+    background:#fff;border-left:5px solid var(--violet);padding:14px 16px;border-radius:0 8px 8px 0;
+    margin-bottom:18px;line-height:1.55;font-size:0.92rem;border:1px solid var(--panel-line);border-left-width:5px;
+  }
+  .brief-box .example{margin-top:10px;background:#EAF6FF;padding:10px 12px;border-radius:6px;font-size:0.86rem;}
+  .formula{
+    display:inline-block;background:var(--ink);color:#fff;
+    padding:5px 12px;border-radius:6px;font-family:'Space Mono';margin:5px 0;font-weight:700;
+  }
+
+  /* RADICAL DISPLAY */
+  .radical{display:inline-flex;align-items:flex-start;font-family:'Orbitron',sans-serif;font-weight:700;}
+  .radical .idx{font-size:0.65em;margin-right:-2px;margin-top:-2px;}
+  .radical .bar{border-top:2px solid currentColor;padding:0 5px;margin-left:2px;}
+
+  /* CARD */
+  .lab-card{
+    background:#fff;
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:18px;
+    margin-top:6px;
+  }
+  .progress-track{display:flex;gap:6px;margin-bottom:14px;}
+  .progress-track span{flex:1;height:7px;border-radius:4px;background:#E6E9F5;}
+  .progress-track span.done{background:var(--success);}
+  .progress-track span.fail{background:var(--danger);}
+  .progress-track span.current{background:var(--amber);}
+
+  .problem-text{font-size:1.02rem;line-height:1.65;margin-bottom:16px;}
+  .problem-text b{color:var(--violet);}
+  .problem-text sup{color:var(--violet);}
+
+  .type-choice{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .type-choice button{
+    flex:1;min-width:120px;
+    padding:10px;border-radius:8px;border:2px solid var(--ink);
+    background:#fff;font-family:'Space Mono';font-weight:bold;cursor:pointer;font-size:0.8rem;
+  }
+  .type-choice button.picked{background:var(--amber);}
+  .type-choice button:disabled{cursor:default;}
+  .type-choice button.right-ans{background:var(--success);color:#fff;border-color:var(--success);}
+  .type-choice button.wrong-ans{background:var(--danger);color:#fff;border-color:var(--danger);}
+
+  .answer-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+  .answer-row label{font-size:0.82rem;font-weight:bold;}
+  .answer-row input{
+    width:140px;padding:10px;font-size:16px;border:2px solid var(--ink);border-radius:8px;
+    font-family:'Space Mono';background:#fff;
+  }
+  .answer-row .unit{font-size:0.82rem;color:#555;}
+
+  .btn{
+    font-family:'Orbitron',sans-serif;font-weight:700;
+    background:var(--ink);color:#fff;
+    border:none;padding:12px 20px;border-radius:8px;cursor:pointer;font-size:0.82rem;
+    letter-spacing:0.4px;
+  }
+  .btn:hover{background:#0B1020;}
+  .btn.secondary{background:transparent;color:var(--ink);border:2px solid var(--ink);}
+  .btn:disabled{opacity:0.4;cursor:default;}
+
+  .feedback{margin-top:16px;padding:14px 16px;border-radius:10px;font-size:0.9rem;line-height:1.55;display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--success-bg);border:2px solid var(--success);}
+  .feedback.bad{background:var(--danger-bg);border:2px solid var(--danger);}
+  .feedback .steps{margin-top:8px;background:rgba(0,0,0,0.05);padding:10px;border-radius:8px;white-space:pre-line;font-size:0.84rem;}
+
+  .actions-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+
+  .mod-result{text-align:center;padding:28px 16px;}
+  .mod-result .big-icon{font-size:2.8rem;}
+  .mod-result h2{font-family:'Orbitron',sans-serif;color:var(--ink);}
+
+  footer.hud{
+    margin-top:18px;display:flex;justify-content:space-between;align-items:center;
+    color:#7C8BB5;font-size:0.74rem;flex-wrap:wrap;gap:8px;
+  }
+
+  .intro{text-align:center;padding:8px 6px 4px;}
+  .intro h2{font-family:'Orbitron',sans-serif;font-size:1.25rem;}
+  .intro p{max-width:560px;margin:8px auto;line-height:1.6;font-size:0.92rem;}
+
+  .certificate{
+    border:4px solid var(--violet);outline:2px solid var(--amber);outline-offset:-9px;
+    padding:30px 22px;text-align:center;background:#fff;border-radius:14px;
+  }
+  .certificate h2{font-family:'Orbitron',sans-serif;font-size:1.4rem;color:var(--violet);margin-bottom:4px;}
+  .certificate .name-line{font-size:1.2rem;margin:16px 0;font-weight:bold;border-bottom:2px solid var(--ink);display:inline-block;padding:0 30px 4px;}
+  .certificate .seal{font-size:2.2rem;margin-top:8px;}
+
+  @media (max-width:720px){
+    nav.modules{grid-template-columns:repeat(2,1fr);}
+    .energy-stat{display:none;}
+    .panel{padding:16px 14px 20px;}
+    .lab-card{padding:14px;}
+    .panel-title{font-size:1.02rem;padding-right:0;}
+    .tag{position:static;display:inline-block;margin-bottom:10px;}
+    .answer-row{flex-direction:column;align-items:stretch;}
+    .answer-row input{width:100%;font-size:16px;}
+    .type-choice button{min-width:100%;}
+    .btn{width:100%;padding:13px 16px;font-size:0.85rem;}
+    .actions-row{flex-direction:column;}
+    .actions-row .btn{width:100%;}
+  }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app">
+    <div class="core-icon">⚡</div>
+    <div>
+      <h1>Laboratorio de Superpoderes Numéricos</h1>
+      <p>Módulo activo: Multiplicación · Potenciación · Radicación</p>
+    </div>
+    <div class="energy-stat">Energía acumulada<b id="hud-points">0</b></div>
+  </header>
+
+  <nav class="modules" id="modNav"></nav>
+
+  <main class="panel" id="panel">
+    <div class="intro">
+      <h2>⚙️ Iniciando laboratorio…</h2>
+      <p>Si este mensaje no cambia en segundos, abre este archivo con el navegador completo (Chrome o Safari), no con una vista previa de mensajería.</p>
+    </div>
+  </main>
+
+  <noscript>
+    <div class="panel" style="margin-top:14px;">
+      <div class="intro">
+        <h2>⚠️ Necesitas activar JavaScript</h2>
+        <p>Esta app usa JavaScript para mostrar los ejercicios. Ábrela con el navegador completo (Chrome, Safari, Edge).</p>
+      </div>
+    </div>
+  </noscript>
+
+  <footer class="hud">
+    <span id="footMsg">Toca un módulo para activar el experimento.</span>
+    <button class="btn secondary" id="resetBtn" style="font-size:0.68rem;padding:6px 10px;">Reiniciar progreso</button>
+  </footer>
+</div>
+
+<script>
+/* ============== UTILIDADES ============== */
+function ri(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function pick(arr){return arr[ri(0,arr.length-1)];}
+function fmt(n){
+  if(Math.abs(n-Math.round(n))<0.001) return Math.round(n).toString();
+  return (Math.round(n*100)/100).toString();
+}
+function radicalHtml(index, radicand){
+  if(index===2) return `<span class="radical">√<span class="bar">${radicand}</span></span>`;
+  return `<span class="radical"><sup class="idx">${index}</sup>√<span class="bar">${radicand}</span></span>`;
+}
+
+/* ============== ESTADO ============== */
+const MODULES = [
+  {id:'multiplicacion', label:'Módulo 1', name:'Multiplicación', icon:'✕', need:5},
+  {id:'potenciacion', label:'Módulo 2', name:'Potenciación', icon:'xⁿ', need:5},
+  {id:'radicacion', label:'Módulo 3', name:'Radicación', icon:'√', need:5},
+  {id:'final', label:'Final', name:'Núcleo Final', icon:'⚡', need:6},
+];
+
+let state = {
+  points:0,
+  progress:{ multiplicacion:{stars:0,done:false}, potenciacion:{stars:0,done:false}, radicacion:{stars:0,done:false}, final:{stars:0,done:false} }
+};
+
+let session = null;
+let currentMod = null;
+
+/* ============== PERSISTENCIA ============== */
+async function loadState(){
+  try{
+    if(window.storage && typeof window.storage.get === 'function'){
+      const r = await window.storage.get('lab-numeros-6to-progress', false);
+      if(r && r.value){ state = JSON.parse(r.value); }
+    }
+  }catch(e){ /* sin datos previos o almacenamiento no disponible en este navegador */ }
+  render();
+}
+async function saveState(){
+  try{
+    if(window.storage && typeof window.storage.set === 'function'){
+      await window.storage.set('lab-numeros-6to-progress', JSON.stringify(state), false);
+    }
+  }catch(e){ /* el progreso sigue funcionando en esta sesión aunque no se guarde */ }
+}
+
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!confirm('¿Reiniciar todo tu progreso del laboratorio?')) return;
+  state = {points:0, progress:{ multiplicacion:{stars:0,done:false}, potenciacion:{stars:0,done:false}, radicacion:{stars:0,done:false}, final:{stars:0,done:false} }};
+  await saveState();
+  currentMod=null;
+  render();
+});
+
+/* ============== GENERADORES ============== */
+
+// ---- MULTIPLICACIÓN ----
+function genMultiplicacion(){
+  const calcTemplates = [
+    ()=>{
+      const A=ri(12,48), B=ri(4,9);
+      return {text:`Calcula: <b>${A} × ${B}</b>`, ans:A*B, unit:'', mode:'calc',
+        setup:`${A} × ${B} = ${A*B}\nTip: descompón ${A} en decenas y unidades para multiplicar por partes.`};
+    },
+    ()=>{
+      const A=ri(8,30), B=ri(5,12);
+      return {text:`Una fábrica empaca <b>${A} galletas</b> en cada caja. Si arma <b>${B} cajas</b>, ¿cuántas galletas empacó en total?`, ans:A*B, unit:'galletas', mode:'calc',
+        setup:`${A} × ${B} = ${A*B}`};
+    },
+    ()=>{
+      const A=ri(15,60), B=ri(3,8);
+      return {text:`Un bus tiene <b>${A} asientos</b>. Si hay <b>${B} buses</b> iguales, ¿cuántos asientos hay en total?`, ans:A*B, unit:'asientos', mode:'calc',
+        setup:`${A} × ${B} = ${A*B}`};
+    }
+  ];
+  const propTemplates = [
+    ()=>{
+      const A=ri(2,12), B=ri(2,12);
+      return {
+        text:`Observa: <b>${A} × ${B}</b> y <b>${B} × ${A}</b> dan el mismo resultado, sin importar el orden de los factores. ¿Qué propiedad de la multiplicación es esta?`,
+        mode:'property', choices:['Conmutativa','Asociativa','Distributiva'], correct:'Conmutativa',
+        setup:`Propiedad conmutativa: a × b = b × a\n${A} × ${B} = ${B} × ${A} = ${A*B}`
+      };
+    },
+    ()=>{
+      const A=ri(2,8), B=ri(2,6), C=ri(2,6);
+      return {
+        text:`Observa: <b>(${A} × ${B}) × ${C}</b> da el mismo resultado que <b>${A} × (${B} × ${C})</b>, sin importar cómo agrupes los factores. ¿Qué propiedad es esta?`,
+        mode:'property', choices:['Conmutativa','Asociativa','Distributiva'], correct:'Asociativa',
+        setup:`Propiedad asociativa: (a × b) × c = a × (b × c)\nAmbas formas dan ${A*B*C}`
+      };
+    },
+    ()=>{
+      const A=ri(2,9), B=ri(2,8), C=ri(2,8);
+      return {
+        text:`Observa: <b>${A} × (${B} + ${C})</b> da el mismo resultado que <b>${A}×${B} + ${A}×${C}</b>. La multiplicación "se reparte" sobre la suma. ¿Qué propiedad es esta?`,
+        mode:'property', choices:['Conmutativa','Asociativa','Distributiva'], correct:'Distributiva',
+        setup:`Propiedad distributiva: a × (b + c) = a×b + a×c\n${A} × (${B}+${C}) = ${A}×${B} + ${A}×${C} = ${A*(B+C)}`
+      };
+    }
+  ];
+  const all = [...calcTemplates, ...calcTemplates, ...propTemplates];
+  return {...pick(all)(), type:'multiplicacion'};
+}
+
+// ---- POTENCIACIÓN ----
+function genPotenciacion(){
+  const templates = [
+    ()=>{
+      const base=ri(2,9), exp=ri(2,3);
+      return {text:`Calcula: <b>${base}<sup>${exp}</sup></b>`, ans:Math.pow(base,exp), unit:'', mode:'calc',
+        setup:`${base}${'×'+Array(exp).fill(base).join('×')} en total\n${base}^${exp} = ${Array(exp).fill(base).join(' × ')} = ${Math.pow(base,exp)}`};
+    },
+    ()=>{
+      const base=ri(2,9), exp=ri(3,6);
+      const repeated = Array(exp).fill(base).join(' × ');
+      return {text:`Si multiplicas: <b>${repeated}</b>, ¿qué exponente debe llevar esta potencia de base ${base}?`, ans:exp, unit:'', mode:'calc',
+        setup:`${repeated} = ${base}^${exp}\nEl exponente indica cuántas veces se repite la base.`};
+    },
+    ()=>{
+      const base=ri(2,12), exp=ri(2,4);
+      const askBase = Math.random()<0.5;
+      return {text:`En la potencia <b>${base}<sup>${exp}</sup></b>, ¿cuál es ${askBase?'la <b>base</b>':'el <b>exponente</b>'}?`,
+        ans: askBase?base:exp, unit:'', mode:'calc',
+        setup:`En ${base}^${exp}: la base es ${base} (el número que se repite) y el exponente es ${exp} (cuántas veces se repite).`};
+    },
+    ()=>{
+      const base=ri(2,15);
+      const zero = Math.random()<0.5;
+      return {text:`¿Cuánto es <b>${base}<sup>${zero?0:1}</sup></b>?`, ans: zero?1:base, unit:'', mode:'calc',
+        setup: zero? `Cualquier número (distinto de 0) elevado a 0 es igual a 1.\n${base}^0 = 1` : `Cualquier número elevado a 1 es igual a sí mismo.\n${base}^1 = ${base}`};
+    }
+  ];
+  return {...pick(templates)(), type:'potenciacion'};
+}
+
+// ---- RADICACIÓN ----
+function genRadicacion(){
+  const templates = [
+    ()=>{
+      const base=ri(2,15), sq=base*base;
+      return {text:`Calcula: ${radicalHtml(2,sq)}`, ans:base, unit:'', mode:'calc',
+        setup:`Buscamos un número que multiplicado por sí mismo dé ${sq}.\n${base} × ${base} = ${sq} → √${sq} = ${base}`};
+    },
+    ()=>{
+      const base=ri(2,9), cu=base*base*base;
+      return {text:`Calcula: ${radicalHtml(3,cu)}`, ans:base, unit:'', mode:'calc',
+        setup:`Buscamos un número que multiplicado tres veces por sí mismo dé ${cu}.\n${base} × ${base} × ${base} = ${cu} → ∛${cu} = ${base}`};
+    },
+    ()=>{
+      const base=ri(2,12), sq=base*base;
+      return {text:`Sabiendo que <b>${base}<sup>2</sup> = ${sq}</b>, ¿cuánto es ${radicalHtml(2,sq)}?`, ans:base, unit:'', mode:'calc',
+        setup:`La radicación es la operación inversa de la potenciación.\nSi ${base}^2 = ${sq}, entonces √${sq} = ${base}`};
+    },
+    ()=>{
+      const base=ri(2,10), sq=base*base;
+      const askIndice = Math.random()<0.5;
+      return {text:`En la expresión ${radicalHtml(2,sq)} = ${base}, ¿cuál es ${askIndice?'el <b>índice</b>':'el <b>radicando</b>'}?`,
+        ans: askIndice?2:sq, unit:'', mode:'calc',
+        setup:`En una raíz: el índice (2 si no se escribe, significa raíz cuadrada) indica qué tipo de raíz es, y el radicando es el número dentro del símbolo √.\nAquí el radicando es ${sq} y el índice es 2.`};
+    }
+  ];
+  return {...pick(templates)(), type:'radicacion'};
+}
+
+const GENERATORS = {multiplicacion:genMultiplicacion, potenciacion:genPotenciacion, radicacion:genRadicacion};
+const TYPE_LABEL = {multiplicacion:'Multiplicación', potenciacion:'Potenciación', radicacion:'Radicación'};
+
+/* ============== RENDER NAV ============== */
+function render(){
+  document.getElementById('hud-points').textContent = state.points;
+  const nav = document.getElementById('modNav');
+  nav.innerHTML = '';
+  MODULES.forEach((m,idx)=>{
+    const locked = idx===3 ? !(MODULES.slice(0,3).every(mm=>state.progress[mm.id].done)) : false;
+    const btn = document.createElement('button');
+    btn.className = 'mod-tab' + (currentMod===m.id?' active':'') + (locked?' locked':'');
+    const stars = state.progress[m.id].stars;
+    const pct = Math.round((stars/m.need)*100);
+    btn.innerHTML = `<span class="icon">${m.icon}</span>${m.name}<div class="bar"><i style="width:${pct}%"></i></div>`;
+    if(!locked){
+      btn.addEventListener('click', ()=>{ currentMod=m.id; startModule(m.id); render(); });
+    }
+    nav.appendChild(btn);
+  });
+  if(!currentMod){ renderIntro(); }
+}
+
+function renderIntro(){
+  const f = document.getElementById('panel');
+  f.innerHTML = `
+    <div class="intro">
+      <div class="tag">SISTEMA EN LÍNEA</div>
+      <h2>🧪 Bienvenido(a) al laboratorio</h2>
+      <p>Vas a dominar tres superpoderes numéricos: <b>multiplicación</b> (fusionar cantidades), <b>potenciación</b> (amplificar un número multiplicándolo por sí mismo) y <b>radicación</b> (descifrar qué número generó una potencia). Supera cada módulo para desbloquear el <b>Núcleo Final</b>, donde demostrarás que dominas los tres temas.</p>
+      <p>Elige un módulo arriba para comenzar.</p>
+    </div>
+  `;
+}
+
+/* ============== LÓGICA DE MÓDULO ============== */
+function startModule(id){
+  if(id==='final'){ startFinal(); return; }
+  session = { id, idx:0, total: MODULES.find(m=>m.id===id).need, queue: [] };
+  for(let i=0;i<session.total;i++) session.queue.push(GENERATORS[id]());
+  renderProblem();
+}
+
+function moduleTitle(id){ return MODULES.find(m=>m.id===id).name; }
+
+function briefContent(id){
+  const briefs = {
+    multiplicacion: `<div class="brief-box">
+      Multiplicar es <b>sumar un número varias veces de forma rápida</b>. También tiene propiedades que facilitan el cálculo: conmutativa (el orden no altera el resultado), asociativa (el agrupamiento no altera el resultado) y distributiva (reparte la multiplicación sobre una suma).
+      <div class="formula">a × b = b × a</div>
+      <div class="example"><b>Ejemplo:</b> 4 × 3 = 3 + 3 + 3 + 3 = 12</div>
+    </div>`,
+    potenciacion: `<div class="brief-box">
+      La <b>potenciación</b> es una multiplicación abreviada donde un número (la <b>base</b>) se multiplica por sí mismo tantas veces como indique el <b>exponente</b>.
+      <div class="formula">base<sup>exponente</sup></div>
+      <div class="example"><b>Ejemplo:</b> 5³ = 5 × 5 × 5 = 125. Aquí 5 es la base y 3 es el exponente.</div>
+    </div>`,
+    radicacion: `<div class="brief-box">
+      La <b>radicación</b> es la operación <b>inversa</b> de la potenciación: busca qué número (la raíz) elevado al índice da el radicando.
+      <div class="formula">${radicalHtml(2,'radicando')} = raíz</div>
+      <div class="example"><b>Ejemplo:</b> como 6² = 36, entonces √36 = 6. El 36 es el radicando, el 2 es el índice y el 6 es la raíz.</div>
+    </div>`
+  };
+  return briefs[id]||'';
+}
+
+function renderProblem(){
+  const f = document.getElementById('panel');
+  const p = session.queue[session.idx];
+  const trackHtml = session.queue.map((q,i)=>{
+    let cls='';
+    if(i<session.idx) cls = (session.results && session.results[i]) ? 'done':'fail';
+    if(i===session.idx) cls='current';
+    return `<span class="${cls}"></span>`;
+  }).join('');
+
+  let choiceHtml = '';
+  if(p.mode==='property' && p.choices){
+    choiceHtml = `<div class="type-choice" id="typeChoice">${p.choices.map(c=>`<button data-t="${c}">${c}</button>`).join('')}</div>`;
+  } else if(session.id==='final' && p.mode==='property' && p.choices){
+    choiceHtml = `<div class="type-choice" id="typeChoice">${p.choices.map(c=>`<button data-t="${c}">${c}</button>`).join('')}</div>`;
+  }
+
+  const showNumberInput = !(p.mode==='property');
+
+  f.innerHTML = `
+    <div class="tag">${session.id==='final'?'NÚCLEO FINAL':'EXPERIMENTO ACTIVO'}</div>
+    <h2 class="panel-title">🧪 ${session.id==='final'?'Núcleo Final — Certificación':moduleTitle(session.id)} — Reto ${session.idx+1} de ${session.total}</h2>
+    ${session.id!=='final' ? briefContent(session.id) : `<div class="brief-box">Estos retos mezclan multiplicación, potenciación y radicación. Lee con calma cada uno: así demuestras que dominas los tres temas completos.</div>`}
+    <div class="lab-card">
+      <div class="progress-track">${trackHtml}</div>
+      <div class="problem-text">${p.text}</div>
+      ${choiceHtml}
+      ${showNumberInput ? `
+      <div class="answer-row">
+        <label>Tu respuesta:</label>
+        <input type="number" id="ansInput" step="any" inputmode="decimal" autocomplete="off" placeholder="número">
+        <span class="unit">${p.unit||''}</span>
+      </div>` : ''}
+      <div class="actions-row">
+        <button class="btn" id="checkBtn">Confirmar</button>
+        <button class="btn secondary" id="hintBtn">💡 Pista</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  `;
+
+  let chosenType = null;
+  const tc = document.getElementById('typeChoice');
+  if(tc){
+    tc.querySelectorAll('button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        tc.querySelectorAll('button').forEach(x=>x.classList.remove('picked'));
+        b.classList.add('picked');
+        chosenType = b.dataset.t;
+      });
+    });
+  }
+
+  document.getElementById('hintBtn').addEventListener('click', ()=>{
+    const fb = document.getElementById('feedback');
+    fb.className='feedback show ok';
+    fb.innerHTML = `<b>Pista:</b> ${p.setup.split('\n')[0]}`;
+  });
+
+  document.getElementById('checkBtn').addEventListener('click', ()=>{
+    const fb = document.getElementById('feedback');
+    let ok;
+    if(p.mode==='property'){
+      ok = chosenType === p.correct;
+      if(tc){
+        tc.querySelectorAll('button').forEach(b=>{
+          b.disabled = true;
+          if(b.dataset.t===p.correct) b.classList.add('right-ans');
+          else if(b.classList.contains('picked')) b.classList.add('wrong-ans');
+        });
+      }
+    } else {
+      const val = parseFloat(document.getElementById('ansInput').value);
+      ok = !isNaN(val) && Math.abs(val-p.ans) < 0.5;
+      document.getElementById('ansInput').disabled = true;
+    }
+
+    if(!session.results) session.results=[];
+    session.results[session.idx] = ok;
+
+    if(ok){
+      fb.className='feedback show ok';
+      state.points += 10;
+      fb.innerHTML = `<b>✅ ¡Experimento exitoso!</b> ${p.mode==='property' ? `Propiedad correcta: <b>${p.correct}</b>.` : `Respuesta correcta: <b>${fmt(p.ans)} ${p.unit||''}</b>.`}<div class="steps">${p.setup}</div>`;
+    } else {
+      fb.className='feedback show bad';
+      const correctMsg = p.mode==='property' ? `La propiedad correcta era <b>${p.correct}</b>.` : `La respuesta correcta era <b>${fmt(p.ans)} ${p.unit||''}</b>.`;
+      fb.innerHTML = `<b>🔬 Aún no, sigamos experimentando.</b> ${correctMsg}<div class="steps">${p.setup}</div>`;
+    }
+    document.getElementById('checkBtn').disabled = true;
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className='btn';
+    nextBtn.style.marginTop='12px';
+    nextBtn.textContent = session.idx < session.total-1 ? 'Siguiente reto →' : 'Ver resultado del módulo';
+    nextBtn.addEventListener('click', async ()=>{
+      session.idx++;
+      if(session.idx>=session.total){
+        await finishModule();
+      } else {
+        renderProblem();
+      }
+    });
+    fb.appendChild(document.createElement('br'));
+    fb.appendChild(nextBtn);
+    saveState();
+  });
+}
+
+async function finishModule(){
+  const correctCount = session.results.filter(Boolean).length;
+  const stars = Math.min(session.total, correctCount);
+  const id = session.id;
+  if(id==='final'){
+    state.progress.final.stars = stars;
+    state.progress.final.done = stars >= Math.ceil(session.total*0.8);
+  } else {
+    if(stars > state.progress[id].stars) state.progress[id].stars = stars;
+    if(correctCount >= Math.ceil(session.total*0.7)) state.progress[id].done = true;
+  }
+  await saveState();
+
+  const f = document.getElementById('panel');
+  const passed = id==='final' ? state.progress.final.done : (correctCount >= Math.ceil(session.total*0.7));
+
+  if(id==='final' && passed){
+    f.innerHTML = `
+      <div class="certificate">
+        <div class="seal">🧪⚡🏆</div>
+        <h2>Certificado de Científico(a) Numérico(a)</h2>
+        <p>Se certifica que el agente ha dominado multiplicación, potenciación y radicación de números naturales.</p>
+        <div class="name-line" contenteditable="true">Escribe tu nombre aquí</div>
+        <p>Aciertos en el Núcleo Final: <b>${correctCount} / ${session.total}</b></p>
+        <p>Energía total acumulada: <b>${state.points}</b></p>
+        <button class="btn" onclick="location.reload()" style="margin-top:14px;">Volver al laboratorio</button>
+      </div>
+    `;
+  } else {
+    f.innerHTML = `
+      <div class="mod-result">
+        <div class="big-icon">${passed?'🏆':'🧪'}</div>
+        <h2>${passed ? '¡Módulo completado!' : 'Experimento incompleto'}</h2>
+        <p>Aciertos: <b>${correctCount} / ${session.total}</b></p>
+        ${passed ? '<p>Reuniste suficiente energía. ¡Puedes avanzar al siguiente módulo!</p>' : '<p>Necesitas más energía. ¡Inténtalo de nuevo, cada intento te hace mejor científico(a)!</p>'}
+        <div class="actions-row" style="justify-content:center;">
+          <button class="btn" id="retryBtn">🔁 Reintentar módulo</button>
+          <button class="btn secondary" id="backBtn">⬅ Volver al laboratorio</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('retryBtn').addEventListener('click', ()=>startModule(id));
+    document.getElementById('backBtn').addEventListener('click', ()=>{ currentMod=null; render(); });
+  }
+  render();
+}
+
+function startFinal(){
+  session = { id:'final', idx:0, total:6, queue: [] };
+  const order = ['multiplicacion','potenciacion','radicacion','multiplicacion','potenciacion','radicacion'];
+  const shuffled = order.sort(()=>Math.random()-0.5);
+  shuffled.forEach(t=>session.queue.push(GENERATORS[t]()));
+  renderProblem();
+}
+
+loadState();
+</script>
+</body>
+</html>
